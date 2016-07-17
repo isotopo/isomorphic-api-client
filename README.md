@@ -24,7 +24,7 @@ Api({
 
 ```
 
-log in, and make request to the api:
+make request to the api:
 ```javascript
 import {Client} from 'isomorphic-api-client'
 
@@ -49,13 +49,17 @@ or you can do it more easy:
 ```javascript
 import {Resources} from 'isomorphic-api-client'
 
-Users = Resources('/users')
+Users = new Resources('/users')
 
 let user = await Users.get('1') // GET https://myhost.com:3000/api/v2/users/1
 let theNew = await Users.post(skirtl) // POST https://myhost.com:3000/api/v2/users
-theNew = await apiClient.update(1, squirtle) // UPDATE https://myhost.com:3000/api/v2/users/1
-await apiClient.delete('1') // DELETE https://myhost.com:3000/api/v2/users/1
+theNew = await apiClient.update(2, squirtle) // UPDATE https://myhost.com:3000/api/v2/users/2
+await apiClient.delete('2') // DELETE https://myhost.com:3000/api/v2/users/2
 ```
+
+
+ToDo:
+- [] Tests and readme for Auth token requests
 
 
 ## License

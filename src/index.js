@@ -13,22 +13,15 @@ export default function configureClient ({
   host,
   port,
   basePath,
-  version  
+  version
 }){
   baseUrl = `${protocol}://${host}${port ? ':' + port : ''}${basePath || ''}/${version ? 'v' + version : ''}`
 }
 
-const instance = new Client();
+let instance;
 
 export class Client {
   constructor () {
-    if (!instance) {
-      instance = this;
-    }
-    return instance
-  }
-
-  static getInstance () {
     if (!instance) {
       instance = this;
     }
@@ -42,7 +35,7 @@ export class Client {
   get headers () {
     return apiAuthToken ? {...jsonHeaders, 'Authorization' : apiAuthToken} : jsonHeaders
   }
-    
+
   get (relativeUrl, query) {
     let encodedQuery = query ? '?' + encodeQueryParams(query) : ''
     let url = baseUrl + relativeUrl + encodedQuery
@@ -60,11 +53,11 @@ export class Client {
   }
 
   post (relativeUrl, body) {
-    _bodyRequest (relativeUrl, body, 'POST')
+    return this._bodyRequest (relativeUrl, body, 'POST')
   }
 
   put (relativeUrl, body) {
-    _bodyRequest (relativeUrl, body, 'PUT')
+    return this._bodyRequest (relativeUrl, body, 'PUT')
   }
 
   delete (relativeUrl) {
@@ -75,7 +68,7 @@ export class Client {
   }
 }
 
-export class Resource extends Client {
+export class Resources {
   constructor (resourcePath) {
     this.resourcePath = resourcePath
     this.client = new Client()
@@ -84,24 +77,24 @@ export class Resource extends Client {
   get (criteria) {
     let url = typeof criteria === 'string' || typeof criteria === 'number'  ?
         this.resourcePath + '/' + criteria : this.resourcePath
-    this.client.get(url, typeof criteria === 'object' && criteria)
+    return this.client.get(url, typeof criteria === 'object' && criteria)
   }
-  
+
   post (body) {
-    this.client.get(this.resourcePath, body)
+    return this.client.post(this.resourcePath, body)
   }
-  
-  
+
+
   put (id, body) {
     let url = this.resourcePath + '/' + id
-    this.client.get(url, body)
+    return this.client.put(url, body)
   }
-  
+
   delete (id) {
     let url = this.resourcePath + '/' + id
-    this.client.get(url)
+    return this.client.delete(url)
   }
-  
+
 }
 
 function encodeQueryParams (query) {
