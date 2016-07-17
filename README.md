@@ -59,7 +59,7 @@ await apiClient.delete('2') // DELETE https://myhost.com:3000/api/v2/users/2
 
 
 ToDo:
-- [] Tests and readme for Auth token requests
+- [ ] Tests and readme for Auth token requests
 
 
 ## License
