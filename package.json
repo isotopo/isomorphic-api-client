@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/4yopping/react-cloudinary-lite.git"
+    "url": "git+https://github.com/4yopping/isomorphic-api-client.git"
   },
   "keywords": [
     "api",
@@ -23,9 +23,9 @@
   "author": "Futurecommerce",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/4yopping/react-cloudinary-lite/issues"
+    "url": "https://github.com/4yopping/isomorphic-api-client/issues"
   },
-  "homepage": "https://github.com/4yopping/react-cloudinary-lite#readme",
+  "homepage": "https://github.com/4yopping/isomorphic-api-client#readme",
   "dependencies": {
     "isomorphic-fetch": "^2.2.1"
   },
