@@ -25,7 +25,9 @@ const blastoise = {
 
 let apiMock = nock('https://myhost.com:3000/api/v2')
       .get('/users/1').reply(200, hugo)
+      .get('/users/666').reply(400, { code: 1401 }) 
       .get('/users/2').reply(200, luck)
+      .post('/users/bad').reply(400, { code: 400, message: { notAllowed: '\"notAllowed\" is not Allowed' } })
       .post('/users', squirtle).times(2).reply(201, {_id: 3})
       .put('/users/3', blastoise).times(2).reply(200, {...squirtle, ...blastoise})
       .delete('/users/3').times(2).reply(200, {deleted: true})
@@ -54,6 +56,30 @@ describe('Api Calls', () => {
     expect(usertwo).to.have.property('username', luck.username)
     expect(usertwo).to.have.property('email', luck.email)
   })
+
+  it('Should get 404 error', async function (done) {
+    let apiClient = new Client();
+    try {
+      let user = await apiClient.get('/users/666')
+      done(user)
+    } catch (error) {
+      expect(error).to.have.property('code', 1401)
+      done()
+    }
+  })
+  
+  it('Should get 400 error (bad request)', async function (done) {
+    let apiClient = new Client();
+    try {
+      let user = await apiClient.post('/users/bad', { notAllowed: true })
+      done(user)
+    } catch (error) {
+      expect(error).to.have.property('code', 400)
+      expect(error).to.have.property('message')
+      done()
+    }
+  })
+
 
   it(`should post new user.`, async function () {
     let apiClient = new Client();
