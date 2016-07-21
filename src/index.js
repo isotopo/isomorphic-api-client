@@ -41,15 +41,20 @@ export class Client {
     let url = baseUrl + relativeUrl + encodedQuery
     let fetchOptions = {method: 'GET',
                         headers: this.headers}
-    return fetch(url, fetchOptions).then((response) => response.json())
+    return fetch(url, fetchOptions).then((response) => this._responseHandler(response))
   }
 
   _bodyRequest (relativeUrl, body, method) {
     let url = baseUrl + relativeUrl
     let fetchOptions = {method,
                         headers: this.headers,
-                        body: JSON.stringify(body)}
-    return fetch(url, fetchOptions).then((response) => response.json())
+                        body: JSON.stringify(body)}               
+    return fetch(url, fetchOptions).then((response) => this._responseHandler(response))
+  }
+
+  _responseHandler (response){
+    let json = response.json()
+    return /^([2]{1}\d[0-9]{1})$/.test(response.status) ? Promise.resolve(json) : json.then(Promise.reject.bind(Promise))
   }
 
   post (relativeUrl, body) {
