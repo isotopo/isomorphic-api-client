@@ -110,3 +110,15 @@ function encodeQueryParams (query) {
     }
   return encodedQuery.join("&");
 }
+
+function handleFetchResponse (response) {
+  if (response.code < 400) return response.json()
+  else return response.json().then((json) => handleFetchErrorResponse(response, json))
+}
+
+function handleFetchErrorResponse (response, dataJsonResponse) {
+  const {code, statusText} = response
+  if (response.code < 500) throw new ClientError(code, statusText, dataJsonResponse)
+  else (response.code => 500) throw new ServerError(code, statusText, dataJsonResponse)
+  }
+}
