@@ -1,19 +1,17 @@
-export class ClientError extends Error {
-  constructor(code, message, jsonResponse) {
-    super(message)
-    this.name = 'ClientError'
-    this.code = code
-    this.message = message
-    this.data = jsonResponse
-  }
+export function ClientError(code, message, parsedJsonResponse) {
+  this.name = 'ClientError'
+  this.code = code
+  this.message = message
+  this.data = parsedJsonResponse
 }
+ClientError.prototype = Object.create(Error.prototype);
+ClientError.prototype.constructor = ClientError;
 
-export class ServerError extends Error {
-  constructor(code, message, jsonResponse) {
-    super(message)
-    this.name = 'ServerError'
-    this.code = code
-    this.message = message
-    this.data = jsonResponse
-  }
+export function ServerError(code, message, parsedJsonResponse) {
+  this.name = 'ServerError'
+  this.code = code
+  this.message = message
+  this.data = parsedJsonResponse
 }
+ServerError.prototype = Object.create(Error.prototype);
+ServerError.prototype.constructor = ServerError;

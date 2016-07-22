@@ -1,4 +1,5 @@
 import 'isomorphic-fetch'
+import {ClientError, ServerError} from './errors'
 
 let baseUrl = '';
 let apiAuthToken = '';
@@ -41,20 +42,15 @@ export class Client {
     let url = baseUrl + relativeUrl + encodedQuery
     let fetchOptions = {method: 'GET',
                         headers: this.headers}
-    return fetch(url, fetchOptions).then((response) => this._responseHandler(response))
+    return fetch(url, fetchOptions).then(handleFetchResponse)
   }
 
   _bodyRequest (relativeUrl, body, method) {
     let url = baseUrl + relativeUrl
     let fetchOptions = {method,
                         headers: this.headers,
-                        body: JSON.stringify(body)}               
-    return fetch(url, fetchOptions).then((response) => this._responseHandler(response))
-  }
-
-  _responseHandler (response){
-    let json = response.json()
-    return /^([2]{1}\d[0-9]{1})$/.test(response.status) ? Promise.resolve(json) : json.then(Promise.reject.bind(Promise))
+                        body: JSON.stringify(body)}
+    return fetch(url, fetchOptions).then(handleFetchResponse)
   }
 
   post (relativeUrl, body) {
@@ -69,7 +65,7 @@ export class Client {
     let url = baseUrl + relativeUrl
     let fetchOptions = {method: 'DELETE',
                         headers: this.headers}
-    return fetch(url, fetchOptions).then((response) => response.json())
+    return fetch(url, fetchOptions).then(handleFetchResponse)
   }
 }
 
@@ -112,13 +108,12 @@ function encodeQueryParams (query) {
 }
 
 function handleFetchResponse (response) {
-  if (response.code < 400) return response.json()
+  if (response.status < 400) return response.json()
   else return response.json().then((json) => handleFetchErrorResponse(response, json))
 }
 
 function handleFetchErrorResponse (response, dataJsonResponse) {
-  const {code, statusText} = response
-  if (response.code < 500) throw new ClientError(code, statusText, dataJsonResponse)
-  else (response.code => 500) throw new ServerError(code, statusText, dataJsonResponse)
-  }
+  const {status, statusText} = response
+  if (response.status < 500) throw new ClientError(status, statusText, dataJsonResponse)
+  else throw new ServerError(status, statusText, dataJsonResponse)
 }

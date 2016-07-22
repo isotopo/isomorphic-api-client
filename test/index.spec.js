@@ -1,4 +1,5 @@
 import Api, {Client, Resources} from '../src/index.js'
+import {ClientError, ServerError} from '../src/errors'
 import { expect } from 'chai'
 import nock from 'nock'
 
@@ -25,7 +26,7 @@ const blastoise = {
 
 let apiMock = nock('https://myhost.com:3000/api/v2')
       .get('/users/1').reply(200, hugo)
-      .get('/users/666').reply(400, { code: 1401 }) 
+      .get('/users/666').reply(404, { code: 1401 })
       .get('/users/2').reply(200, luck)
       .post('/users/bad').reply(400, { code: 400, message: { notAllowed: '\"notAllowed\" is not Allowed' } })
       .post('/users', squirtle).times(2).reply(201, {_id: 3})
@@ -57,23 +58,27 @@ describe('Api Calls', () => {
     expect(usertwo).to.have.property('email', luck.email)
   })
 
-  it('Should get 404 error', async function (done) {
+  it('Should handle 404 error', async function (done) {
     let apiClient = new Client();
     try {
       let user = await apiClient.get('/users/666')
       done(user)
     } catch (error) {
-      expect(error).to.have.property('code', 1401)
+      expect(error).to.be.an.instanceof(ClientError)
+      expect(error).to.have.property('code', 404)
+      expect(error.data).to.have.property('code', 1401)
+      expect(error).to.have.property('message')
       done()
     }
   })
-  
-  it('Should get 400 error (bad request)', async function (done) {
+
+  it('Should handle 400 error (bad request)', async function (done) {
     let apiClient = new Client();
     try {
       let user = await apiClient.post('/users/bad', { notAllowed: true })
       done(user)
     } catch (error) {
+      expect(error).to.be.an.instanceof(ClientError)
       expect(error).to.have.property('code', 400)
       expect(error).to.have.property('message')
       done()
