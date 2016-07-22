@@ -2,10 +2,10 @@
   "name": "isomorphic-api-client",
   "version": "0.1.1",
   "description": "Simple, minimalistic, isomorphic generic client to make requests to an api",
-  "main": "lib/index.js",
+  "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "build": "babel src --out-dir lib"
+    "build": "babel src --out-dir ./"
   },
   "repository": {
     "type": "git",
