@@ -1,8 +1,8 @@
 import 'isomorphic-fetch'
 import {ClientError, ServerError} from './errors'
 
-let baseUrl = '';
-let apiAuthToken = '';
+let baseUrl = ''
+let apiAuthToken = ''
 
 const jsonHeaders = {
     'Accept': 'application/json',
@@ -19,22 +19,22 @@ export default function configureClient ({
   baseUrl = `${protocol}://${host}${port ? ':' + port : ''}${basePath || ''}/${version ? 'v' + version : ''}`
 }
 
-let instance;
+let instance
 
 export class Client {
   constructor () {
     if (!instance) {
-      instance = this;
+      instance = this
     }
     return instance
   }
 
-  setAuthToken (token) {
-    apiAuthToken = token
-  }
-
   get headers () {
     return apiAuthToken ? {...jsonHeaders, 'Authorization' : apiAuthToken} : jsonHeaders
+  }
+
+  setAuthToken (token) {
+    apiAuthToken = token
   }
 
   get (relativeUrl, query) {
@@ -99,12 +99,12 @@ export class Resources {
 }
 
 function encodeQueryParams (query) {
-  let encodedQuery = [];
+  let encodedQuery = []
   for(let param in query)
     if (query.hasOwnProperty(param)) {
-      encodedQuery.push(param + "=" + query[param]);
+      encodedQuery.push(param + "=" + query[param])
     }
-  return encodedQuery.join("&");
+  return encodedQuery.join("&")
 }
 
 function handleFetchResponse (response) {
