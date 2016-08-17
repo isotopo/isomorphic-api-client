@@ -2,7 +2,8 @@ import 'isomorphic-fetch'
 import {ClientError, ServerError} from './errors'
 
 let baseUrl = ''
-let apiAuthToken = ''
+let apiAuthToken;
+let middlewares = [];
 
 const jsonHeaders = {
     'Accept': 'application/json',
@@ -30,11 +31,20 @@ export class Client {
   }
 
   get headers () {
-    return apiAuthToken ? {...jsonHeaders, 'Authorization' : apiAuthToken} : jsonHeaders
+    return apiAuthToken ? {...jsonHeaders, 'Authorization' : (typeof apiAuthToken === 'function' ? apiAuthToken() : apiAuthToken)} : jsonHeaders
   }
 
   setAuthToken (token) {
     apiAuthToken = token
+  }
+
+  addMiddleware(middleware){
+    middlewares.push(middleware)
+  }
+
+  removeMiddleware(middleware) {
+    let middlewareIndex = middlewares.indexOf(middleware)
+    middlewares.splice(middlewareIndex, 1)
   }
 
   get (relativeUrl, query) {
@@ -42,6 +52,7 @@ export class Client {
     let url = baseUrl + relativeUrl + encodedQuery
     let fetchOptions = {method: 'GET',
                         headers: this.headers}
+    executeMiddlewares(url, fetchOptions)
     return fetch(url, fetchOptions).then(handleFetchResponse)
   }
 
@@ -50,6 +61,7 @@ export class Client {
     let fetchOptions = {method,
                         headers: this.headers,
                         body: JSON.stringify(body)}
+    executeMiddlewares(url, fetchOptions)
     return fetch(url, fetchOptions).then(handleFetchResponse)
   }
 
@@ -65,6 +77,8 @@ export class Client {
     let url = baseUrl + relativeUrl
     let fetchOptions = {method: 'DELETE',
                         headers: this.headers}
+
+    executeMiddlewares(url, fetchOptions)
     return fetch(url, fetchOptions).then(handleFetchResponse)
   }
 }
@@ -116,4 +130,10 @@ function handleFetchErrorResponse (response, dataJsonResponse) {
   const {status, statusText} = response
   if (response.status < 500) throw new ClientError(status, statusText, dataJsonResponse)
   else throw new ServerError(status, statusText, dataJsonResponse)
+}
+
+function executeMiddlewares (url, options) {
+  for(let i = 0; i < middlewares.length; i++) {
+    middlewares[i](url,options)
+  }
 }

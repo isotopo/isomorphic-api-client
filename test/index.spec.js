@@ -41,6 +41,8 @@ const apiBaseUrl = 'https://myhost.com:3000/api/v2'
 
 const authToken = 'Bearer ds97we789ewq7dasd987sad987sda732sda983n4d7sad'
 
+const customHeaderValue = 'hello world'
+
 before(() => {
 
   let apiMock = nock(apiBaseUrl)
@@ -153,6 +155,9 @@ before(() => {
         .post('/users', squirtle).times(2).reply(201, {_id: 3})
         .put('/users/3', blastoise).times(2).reply(200, {...squirtle, ...blastoise})
         .delete('/users/3').times(2).reply(200, {deleted: true})
+        .get('/myHeader').reply(function(uri, bodyRequest){
+          return [200, {'myheader': this.req.headers.myheader[0]}]
+        })
 
   Api(apiConfig)
 
@@ -184,7 +189,7 @@ describe('Api Calls With Auth', () => {
     let Users = new Resources('/users')
 
     let {token} = await apiClient.post('/auth/login', hugoCredentials)
-    apiClient.setAuthToken(token)
+    apiClient.setAuthToken(function(){ return token })
 
     let user = await apiClient.get('/users/1')
     let usertwo = await Users.get('2')
@@ -257,5 +262,17 @@ describe('Api Calls With Auth', () => {
 
     expect(response).to.have.property('deleted', true)
     expect(responsetwo).to.have.property('deleted', true)
+  })
+
+  it(`set a middleware to change header.`, async function () {
+    let apiClient = new Client();
+
+    apiClient.addMiddleware(function addCustomHeader(url, options){
+      options.headers = {...options.headers, Myheader: customHeaderValue}
+    })
+
+    let response = await apiClient.get('/myHeader')
+
+    expect(response.myheader).to.equal(customHeaderValue)
   })
 })
