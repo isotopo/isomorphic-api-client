@@ -1,6 +1,6 @@
 {
   "name": "isomorphic-api-client",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Simple, minimalistic, isomorphic generic client to make requests to an api",
   "main": "index.js",
   "scripts": {
