@@ -158,6 +158,9 @@ before(() => {
         .get('/myHeader').reply(function(uri, bodyRequest){
           return [200, {'myheader': this.req.headers.myheader[0]}]
         })
+        .get('/myHeaderTwo').reply(function(uri, bodyRequest){
+          return [200, {'myheadertwo': this.req.headers.myheadertwo[0]}]
+        })
 
   Api(apiConfig)
 
@@ -274,5 +277,24 @@ describe('Api Calls With Auth', () => {
     let response = await apiClient.get('/myHeader')
 
     expect(response.myheader).to.equal(customHeaderValue)
+  })
+
+  it(`set a middleware with object to catch request and response.`, async function () {
+    let apiClient = new Client();
+
+    apiClient.addMiddleware({
+      request: (url, options) => {
+        options.headers = {...options.headers, Myheadertwo: customHeaderValue}
+        return [url, options]
+      },
+      response: (response) => {
+        response.modified = true
+        return response
+      }})
+
+    let response = await apiClient.get('/myHeaderTwo')
+
+    expect(response.myheadertwo).to.equal(customHeaderValue)
+    expect(response.modified).to.be.true
   })
 })

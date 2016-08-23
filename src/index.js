@@ -2,7 +2,7 @@ import 'isomorphic-fetch'
 import {ClientError, ServerError} from './errors'
 
 let baseUrl = ''
-let apiAuthToken;
+let apiAuthToken
 let middlewares = [];
 
 const jsonHeaders = {
@@ -52,8 +52,7 @@ export class Client {
     let url = baseUrl + relativeUrl + encodedQuery
     let fetchOptions = {method: 'GET',
                         headers: this.headers}
-    executeMiddlewares(url, fetchOptions)
-    return fetch(url, fetchOptions).then(handleFetchResponse)
+    return modifiedFetch(url, fetchOptions)
   }
 
   _bodyRequest (relativeUrl, body, method) {
@@ -61,8 +60,7 @@ export class Client {
     let fetchOptions = {method,
                         headers: this.headers,
                         body: JSON.stringify(body)}
-    executeMiddlewares(url, fetchOptions)
-    return fetch(url, fetchOptions).then(handleFetchResponse)
+    return modifiedFetch(url, fetchOptions)
   }
 
   post (relativeUrl, body) {
@@ -78,8 +76,7 @@ export class Client {
     let fetchOptions = {method: 'DELETE',
                         headers: this.headers}
 
-    executeMiddlewares(url, fetchOptions)
-    return fetch(url, fetchOptions).then(handleFetchResponse)
+    return modifiedFetch(url, fetchOptions)
   }
 }
 
@@ -132,8 +129,31 @@ function handleFetchErrorResponse (response, dataJsonResponse) {
   else throw new ServerError(status, statusText, dataJsonResponse)
 }
 
-function executeMiddlewares (url, options) {
+function modifiedFetch (...args) {
+  let promise = Promise.resolve(args)
+
   for(let i = 0; i < middlewares.length; i++) {
-    middlewares[i](url,options)
+    let middleware = middlewares[i]
+    let {request: middlewareRequest} = middleware
+    if (middlewareRequest)
+      promise = promise.then(args => middlewareRequest(...args))
+    else if (typeof middleware === 'function'){
+      if (process && process.env.NODE_ENV === 'development')
+        console.log("Warning: middleware function is deprecated use object ({request, response})")
+      middleware(...args)
+    }
   }
+
+  promise = promise.then((args) => fetch(...args))
+
+  // temporary json middleware applied
+  promise = promise.then(handleFetchResponse)
+
+  for(let i = 0; i < middlewares.length; i++) {
+    let {response: middlewareResponse} = middlewares[i]
+    if (middlewareResponse)
+      promise = promise.then(middlewareResponse)
+  }
+
+  return promise
 }
